@@ -1,8 +1,9 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import router from './router'
 import './assets/tailwind.css'
 import frame from './components/frame.vue'
 
-const app = createApp(App)
+const app = createApp(App).use(router)
 app.component('frame', frame)
-app.mount('#app')
+app.use(router).mount('#app')
