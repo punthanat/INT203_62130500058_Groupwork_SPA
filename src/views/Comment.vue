@@ -68,7 +68,139 @@
 
 
 <script>
+import formText from "../components/formText.vue";
 
+export default {
+  name: "App",
+  components: {
+    formText,
+  },
+  data() {
+    return {
+      url: "http://localhost:5000/formResults",
+      formResults: [],
+      editMode: false,
+      id: 0,
+    };
+  },
+  methods: {
+    showData(oldForm) {
+      this.editMode = !this.editMode;
+      console.log(oldForm);
+      if (
+        this.$refs.formText.Advantages !== "" &&
+        this.$refs.formText.Disadvantages !== "" &&
+        this.$refs.formText.Position !== "" &&
+        this.$refs.formText.Utility !== ""
+      ) {
+        this.$refs.formText.Advantages = "";
+        this.$refs.formText.Disadvantages = "";
+        this.$refs.formText.Position = "";
+        this.$refs.formText.Utility = "";
+        console.log("formText value='' success");
+      } else {
+        this.$refs.formText.Advantages = oldForm.Advantages;
+        this.$refs.formText.Disadvantages = oldForm.Disadvantages;
+        this.$refs.formText.Position = oldForm.Position;
+        this.$refs.formText.Utility = oldForm.Utility;
+        this.id = oldForm.id;
+        console.log("---test--app.vue");
+        console.log(`editMode: ${this.editMode}`);
+        console.log("---------app.vue");
+      }
+    },
+
+    async editForm(editForm) {
+      try {
+        console.log(editForm);
+        console.log(this.formResults);
+        this.editMode = true;
+
+        const res = await fetch(`${this.url}/${editForm.id}`, {
+          method: "PUT",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            Advantages: editForm.Advantages,
+            Disadvantages: editForm.Disadvantages,
+            Position: editForm.Position,
+            Utility: editForm.Utility,
+          }),
+        });
+
+        const data = await res.json();
+        this.formResults = this.formResults.map((form) =>
+          form.id === editForm.id
+            ? {
+                ...form,
+                Advantages: data.Advantages,
+                Disadvantages: data.Disadvantages,
+                Position: data.Position,
+                Utility: data.Utility,
+              }
+            : form
+        );
+
+        this.editMode = false;
+        console.log("edittttt success");
+      } catch (error) {
+        console.log(`Could not edit! ${error}`);
+      }
+    },
+
+    async deleteForm(id) {
+      try {
+        await fetch(`${this.url}/${id}`, {
+          method: "DELETE",
+        });
+        this.formResults = this.formResults.filter((form) => form.id != id);
+        console.log('delete success')
+      } catch (error) {
+        console.log(`Could not get! ${error}`);
+      }
+    },
+    async addForm(newForm) {
+      try {
+        console.log(newForm);
+        this.formResults.Advantages = newForm.Advantages;
+        this.formResults.Disadvantages = newForm.Disadvantages;
+        this.formResults.Position = newForm.Position;
+        this.formResults.Utility = newForm.Utility;
+        const res = await fetch(this.url, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            Advantages: newForm.Advantages,
+            Disadvantages: newForm.Disadvantages,
+            Position: newForm.Position,
+            Utility: newForm.Utility,
+          }),
+        });
+        const data = await res.json();
+        this.formResults = [...this.formResults, data];
+      } catch (error) {
+        console.log(`Could not save! ${error}`);
+      }
+    },
+
+    async getFormResult() {
+      try {
+        const res = await fetch(this.url);
+        const data = await res.json();
+        return data;
+      } catch (error) {
+        console.log(`Could not get! ${error}`);
+      }
+    },
+  },
+  async created() {
+    this.formResults = await this.getFormResult();
+    console.log("creatededdddddddddd");
+  },
+};
 </script>
 
 
